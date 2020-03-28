@@ -1,9 +1,13 @@
 {
-	“name”: “switch-code-bot”,
-	“version”: “1.0.0”,
-	“description”: “A bot to automatically pin switch codes or search based on user.”,
-	“main”: “bot.js”,
-	“author”: “Frederick Lawler”,
-	"email": "fred@fredlawl.com",
-	“dependencies”: {}
+        "name": "switch-code-bot",
+        "version": "1.0.0",
+        "description": "A bot to automatically pin switch codes or search based on user.",
+        "main": "bot.js",
+        "author": "Frederick Lawler",
+        "email": "fred@fredlawl.com",
+        "dependencies": {
+                "discord": "^0.8.2",
+                "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+                "winston": "^3.2.1"
+        }
 }
