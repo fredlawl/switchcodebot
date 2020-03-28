@@ -1,0 +1,9 @@
+{
+	“name”: “switch-code-bot”,
+	“version”: “1.0.0”,
+	“description”: “A bot to automatically pin switch codes or search based on user.”,
+	“main”: “bot.js”,
+	“author”: “Frederick Lawler”,
+	"email": "fred@fredlawl.com",
+	“dependencies”: {}
+}
