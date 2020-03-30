@@ -9,5 +9,11 @@
                 "discord": "^0.8.2",
                 "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
                 "winston": "^3.2.1"
+        },
+        "devDependencies": {
+                "jest": "^25.2.4"
+        },
+        "scripts": {
+                "test": "jest"
         }
 }
