@@ -1,19 +1,31 @@
 {
-        "name": "switch-code-bot",
-        "version": "1.0.0",
-        "description": "A bot to automatically pin switch codes or search based on user.",
-        "main": "bot.js",
-        "author": "Frederick Lawler",
-        "email": "fred@fredlawl.com",
-        "dependencies": {
-                "discord": "^0.8.2",
-                "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
-                "winston": "^3.2.1"
-        },
-        "devDependencies": {
-                "jest": "^25.2.4"
-        },
-        "scripts": {
-                "test": "jest"
-        }
+ "name": "switch-code-bot",
+ "version": "1.0.0",
+ "description": "A bot to automatically pin switch codes or search based on user.",
+ "main": "src/bot.js",
+ "author": "Frederick Lawler",
+ "email": "fred@fredlawl.com",
+ "dependencies": {
+  "discord": "^0.8.2",
+  "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+  "winston": "^3.2.1"
+ },
+ "devDependencies": {
+  "@babel/cli": "^7.8.4",
+  "@babel/core": "^7.9.0",
+  "@babel/preset-env": "^7.9.0",
+  "babel-cli": "^6.26.0",
+  "babel-jest": "^25.2.6",
+  "jest": "^25.2.4"
+ },
+ "scripts": {
+  "test": "jest",
+  "build": "babel src -d bin",
+  "run": "npm run-script build && node bin/bot.js"
+ },
+ "jest": {
+  "transform": {
+   "^.+\\.jsx?$": "babel-jest"
+  }
+ }
 }

@@ -1,5 +1,9 @@
-const cmds = require('../commands.js');
+const cmds = require('../src/commands.js');
 
-test('disfakka returns string', () => {
-    expect(cmds.disfakka()).toBe('disfakka!!');
+jest.mock('discord')
+
+// todo: perform command integration tests here
+
+test('empty test', () => {
+	expect(true).toBe(true);
 });
