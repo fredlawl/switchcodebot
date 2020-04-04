@@ -21,9 +21,9 @@ module.exports.parseMessage = function (message)
 
 module.exports.parseSwitchCode = function (code)
 {
-	let codePattern = /^(sw-)?(\\d{12}|\\d{4}|\\d{4}-\\d{4}-\\d{4})$/gi;
+	let codePattern = /^(sw-)?(\d{12}|\d{4}|\d{4}-\d{4}-\d{4})$/i;
 
-	if (!code.matchAll(codePattern)) {
+	if (!code.match(codePattern)) {
 		return '';
 	}
 

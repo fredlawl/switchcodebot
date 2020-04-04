@@ -50,4 +50,9 @@ describe('parseSwitchCode', () => {
 		let actual = parser.parseSwitchCode(code);
 		expect(actual).toBe('SW-1234-1234-1234');
 	}
+
+	test('code should fail', () => {
+		let actual = parser.parseSwitchCode('test');
+		expect(actual).toBe('');
+	});
 });
