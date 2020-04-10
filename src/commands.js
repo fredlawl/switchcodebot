@@ -1,4 +1,4 @@
-import { isBefore, isAfter  } from 'date-fns'
+import { isBefore, isAfter, getISOWeek  } from 'date-fns'
 
 const parser = require('./parser');
 
@@ -35,30 +35,34 @@ module.exports.switchcode = function (app, code) {
 };
 
 module.exports.addturnup = function (app, amount, daytime) {
-	const user = app.message.user;
-	const helpMessage = `Correct command useage: \`!addturnup amount [daytime]\`:
-						\tamount is required, and must be a positive integer.
-						\tdaytime is optional, and in the format of a abbreviated day + cycle. eg. monmorn, monaft for morning & afternoon.`
+	const helpMessage = `Command usage: \`!addturnup amount [day[am | pm]]\`:
+		\tamount -  is required, and must be a positive integer.
+		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.`
+
 	const daytimeLookup = {
-		['sunmorn']: 0,
-		['monmorn']: 1,
-		['monaft']: 1,
-		['tuemorn']: 2,
-		['tueaft']: 2,
-		['wedmorn']: 3,
-		['wedaft']: 3,
-		['thurmorn']: 4,
-		['thuraft']: 4,
-		['frimorn']: 5,
-		['friaft']: 5,
-		['satmorn']: 6,
-		['sataft']: 6,
+		['sunam']: 0,
+		['monam']: 1,
+		['monpm']: 1,
+		['tueam']: 2,
+		['tuepm']: 2,
+		['wedam']: 3,
+		['wedpm']: 3,
+		['thuram']: 4,
+		['thurpm']: 4,
+		['friam']: 5,
+		['fripm']: 5,
+		['satam']: 6,
+		['satpm']: 6,
 	}
 
-	const now = (new Date());
-
 	const dayLookupTable = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-	const timeLookupTable = ['aft', 'morn'];
+	const timeLookupTable = ['pm', 'am'];
+
+	const userId = app.message.userID;
+	const user = app.message.user;
+	const now = (new Date());
+	const year = now.getFullYear();
+	const week = getISOWeek(now);
 
 	let parsedAmount = parseInt(amount);
 	if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -71,11 +75,12 @@ module.exports.addturnup = function (app, amount, daytime) {
 
 	let today = dayLookupTable[now.getDay()];
 	let isMorning =
-		isAfter(now, (new Date().setHours(7, 59, 59, 0)))
-		&& isBefore(now, (new Date().setHours(11, 59, 59, 0)));
-	let parsedDaytime = today + timeLookupTable[isMorning * 1];
+		(isAfter(now, (new Date().setHours(7, 59, 59, 0)))
+		&& isBefore(now, (new Date().setHours(11, 59, 59, 0)))) * 1;
+	let parsedDaytime = today + timeLookupTable[isMorning];
 
 	if (typeof daytime !== 'undefined') {
+		daytime = daytime.toLowerCase();
 		if (!!daytimeLookup[daytime]) {
 			parsedDaytime = daytime;
 		} else {
@@ -87,8 +92,38 @@ module.exports.addturnup = function (app, amount, daytime) {
 		}
 	}
 
-	app.discord.sendMessage({
-		to: app.message.channelID,
-		message: `amount: ${amount}; daytime: ${parsedDaytime}`
+	const formattedDay = parsedDaytime.slice(0, 3).charAt(0).toUpperCase()
+		+ parsedDaytime.slice(1, 3)
+		+ '. ' + parsedDaytime.slice(3).toUpperCase();
+
+	let postfix = 'th';
+	if (week === 1) {
+		postfix = 'st';
+	} else if (week === 2) {
+		postfix = 'nd';
+	} else if (week === 3) {
+		postfix = 'rd';
+	}
+
+	app.db.serialize(function () {
+		app.db.run(`INSERT INTO turnupRecords (userId, username, week, year, ${parsedDaytime}) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET ${parsedDaytime} = ?;`, [
+			userId, user, week, year, amount, amount
+		], function (err) {
+			if (!err) {
+				app.discord.sendMessage({
+					to: app.message.channelID,
+					message: `@${user} I added the price ${amount} to the ${week}${postfix} week of ${year} - ${formattedDay}.`
+				});
+				return;
+			}
+
+			console.log(now.getTime(), err);
+			app.discord.sendMessage({
+				to: app.message.channelID,
+				message: `Sorry! I couldn't log your turnup price! Ask @fredlawl#0879 for help! (${now.getTime()})`
+			});
+		});
 	});
+
+	return true;
 }

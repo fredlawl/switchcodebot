@@ -14,23 +14,24 @@ const db = new sqlite3.Database(dbPath);
 db.serialize(function () {
 	db.run(`
 		CREATE TABLE IF NOT EXISTS turnupRecords (
+			userId INT(11) NOT NULL,
 			username VARCHAR(255) NOT NULL,
 			week INT(11) NOT NULL,
 			year INT(11) NOT NULL,
-			purchase INT(11) NULL,
-			monmorn INT(11) NULL,
-			monaft INT(11) NULL,
-			tuemorn INT(11) NULL,
-			tueaft INT(11) NULL,
-			wedmorn INT(11) NULL,
-			wedaft INT(11) NULL,
-			thumorn INT(11) NULL,
-			thuaft INT(11) NULL,
-			frimorn INT(11) NULL,
-			friaft INT(11) NULL,
-			satmorn INT(11) NULL,
-			sataft INT(11) NULL,
-			PRIMARY KEY(username, week, year)
+			sunam INT(11) NULL,
+			monam INT(11) NULL,
+			monpm INT(11) NULL,
+			tueam INT(11) NULL,
+			tuepm INT(11) NULL,
+			wedam INT(11) NULL,
+			wedpm INT(11) NULL,
+			thuam INT(11) NULL,
+			thupm INT(11) NULL,
+			friam INT(11) NULL,
+			fripm INT(11) NULL,
+			satam INT(11) NULL,
+			satpm INT(11) NULL,
+			PRIMARY KEY(userId, week, year)
 		)
 	`);
 });
@@ -68,7 +69,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     let parsedMessage = parser.parseMessage(message);
     if (!parsedMessage) {
     	/*
-    	 * Apparently this event is fired after the event makes a message, so we'll just
+    	 * Apparently this event is fired pmer the event makes a message, so we'll just
     	 * prevent further action here until it's figured out how to prevent
     	 * reading the bots own message.
     	 * TODO: Make bot not parse back its own message; possibly use the message nonce field
