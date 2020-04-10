@@ -18,18 +18,18 @@ db.serialize(function () {
 			week INT(11) NOT NULL,
 			year INT(11) NOT NULL,
 			purchase INT(11) NULL,
-			monMorn INT(11) NULL,
-			monAft INT(11) NULL,
-			tueMorn INT(11) NULL,
-			tueAft INT(11) NULL,
-			wedMorn INT(11) NULL,
-			wedAft INT(11) NULL,
-			thurMorn INT(11) NULL,
-			thurAft INT(11) NULL,
-			friMorn INT(11) NULL,
-			friAft INT(11) NULL,
-			satMorn INT(11) NULL,
-			satAft INT(11) NULL,
+			monmorn INT(11) NULL,
+			monaft INT(11) NULL,
+			tuemorn INT(11) NULL,
+			tueaft INT(11) NULL,
+			wedmorn INT(11) NULL,
+			wedaft INT(11) NULL,
+			thumorn INT(11) NULL,
+			thuaft INT(11) NULL,
+			frimorn INT(11) NULL,
+			friaft INT(11) NULL,
+			satmorn INT(11) NULL,
+			sataft INT(11) NULL,
 			PRIMARY KEY(username, week, year)
 		)
 	`);
@@ -45,6 +45,7 @@ logger.level = 'debug';
 const commandRegistry = new CommandRegistry();
 commandRegistry.register('^disfakka$', cmds.disfakka);
 commandRegistry.register('^sw$', cmds.switchcode);
+commandRegistry.register('^addturnup$', cmds.addturnup);
 
 // Initialize Discord Bot
 const bot = new Discord.Client({

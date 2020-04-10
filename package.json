@@ -6,6 +6,7 @@
  "author": "Frederick Lawler",
  "email": "fred@fredlawl.com",
  "dependencies": {
+  "date-fns": "^2.12.0",
   "discord": "^0.8.2",
   "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
   "sqlite3": "^4.1.1",
