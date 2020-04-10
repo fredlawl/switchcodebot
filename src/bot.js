@@ -47,12 +47,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     // Put bot into first argument so that commands can send stuff back
 	let args = parsedMessage.args;
 	args.unshift({
-		bot: bot,
-		user: user,
-		userID: userID,
-		channelID: channelID,
-		message: message,
-		event: evt
+		discord: bot,
+		message: {
+			user: user,
+			userID: userID,
+			channelID: channelID,
+			message: message,
+			event: evt
+		}
 	});
 
     let executeResult = commandRegistry.execute(parsedMessage.cmd, args);
