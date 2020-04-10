@@ -1,9 +1,39 @@
+import { CommandRegistry } from "./command-registry";
+
 const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('../auth.json');
 const cmds = require('./commands.js');
 const parser = require('./parser');
-import { CommandRegistry } from "./command-registry";
+const path = require('path')
+
+const dbPath = path.resolve(__dirname, 'switchcodebot.db')
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database(dbPath);
+
+db.serialize(function () {
+	db.run(`
+		CREATE TABLE IF NOT EXISTS turnupRecords (
+			username VARCHAR(255) NOT NULL,
+			week INT(11) NOT NULL,
+			year INT(11) NOT NULL,
+			purchase INT(11) NULL,
+			monMorn INT(11) NULL,
+			monAft INT(11) NULL,
+			tueMorn INT(11) NULL,
+			tueAft INT(11) NULL,
+			wedMorn INT(11) NULL,
+			wedAft INT(11) NULL,
+			thurMorn INT(11) NULL,
+			thurAft INT(11) NULL,
+			friMorn INT(11) NULL,
+			friAft INT(11) NULL,
+			satMorn INT(11) NULL,
+			satAft INT(11) NULL,
+			PRIMARY KEY(username, week, year)
+		)
+	`);
+});
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -24,6 +54,7 @@ const bot = new Discord.Client({
 
 bot.on('disconnect', function (event) {
 	logger.error(`Disconnected from server with message: ${event}`);
+	db.close();
 });
 
 bot.on('ready', function (evt) {
@@ -54,7 +85,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 			channelID: channelID,
 			message: message,
 			event: evt
-		}
+		},
+		db: db
 	});
 
     let executeResult = commandRegistry.execute(parsedMessage.cmd, args);
