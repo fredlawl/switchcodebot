@@ -18,14 +18,13 @@
  "devDependencies": {
   "@babel/cli": "^7.8.4",
   "@babel/core": "^7.9.0",
-  "@babel/preset-env": "^7.9.0",
-  "babel-cli": "^6.26.0",
-  "babel-jest": "^25.2.6",
-  "jest": "^25.2.4"
+  "@babel/preset-env": "^7.9.5",
+  "babel-jest": "^25.3.0",
+  "jest": "^25.3.0"
  },
  "scripts": {
   "test": "jest",
-  "build": "babel src -d bin",
+  "build": "./node_modules/.bin/babel --source-maps -d bin src",
   "run": "npm run-script build && node bin/bot.js"
  },
  "jest": {
