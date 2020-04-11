@@ -73,17 +73,22 @@ module.exports.addturnup = function (app, amount, daytime) {
 		return;
 	}
 
+	const isSunday = now.getDay() === 0;
 	let today = dayLookupTable[now.getDay()];
 	let isMorning =
 		(isAfter(now, (new Date().setHours(7, 59, 59, 0)))
 		&& isBefore(now, (new Date().setHours(11, 59, 59, 0)))) * 1;
-	let parsedDaytime = today + timeLookupTable[isMorning];
+
+	let parsedDaytime = 'sunam';
+	if (!isSunday) {
+		parsedDaytime = today + timeLookupTable[isMorning];
+	}
 
 	if (typeof daytime !== 'undefined') {
 		daytime = daytime.toLowerCase();
-		if (!!daytimeLookup[daytime]) {
+		if (typeof daytimeLookup[daytime] !== 'undefined') {
 			parsedDaytime = daytime;
-		} else {
+		} else if (!isSunday) {
 			app.discord.sendMessage({
 				to: app.message.channelID,
 				message: helpMessage
@@ -112,6 +117,97 @@ module.exports.addturnup = function (app, amount, daytime) {
 			app.discord.sendMessage({
 				to: app.message.channelID,
 				message: `Sorry! I couldn't log your turnup price! Ask @fredlawl#0879 for help! (${now.getTime()})`
+			});
+		});
+	});
+
+	return true;
+}
+
+module.exports.yeahyou = function (app, username) {
+	const userId = app.message.userID;
+	const now = (new Date());
+	const year = now.getFullYear();
+	const week = getISOWeek(now);
+	let turnupPredictionLink = 'https://turnipprophet.io/index.html?first-time=false&prices='
+
+	const dayLookupTable = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+	let today = dayLookupTable[now.getDay()];
+
+	app.db.serialize(function () {
+		let usernameClause = '';
+		if (username) {
+			usernameClause = 'AND username = ?'
+		}
+
+		app.db.all(`SELECT * FROM turnupRecords WHERE year = ? AND week = ? ${usernameClause}`, [
+			year, week, username
+		], function (err, rows) {
+			if (err) {
+				console.log(now.getTime(), err);
+				app.discord.sendMessage({
+					to: app.message.channelID,
+					message: `Sorry! I show peoples prices! Ask @fredlawl#0879 for help! (${now.getTime()})`
+				});
+				return;
+			}
+
+			if (username && !err && rows.length <= 0) {
+				console.log(now.getTime(), err);
+				app.discord.sendMessage({
+					to: app.message.channelID,
+					message: `Sorry! I don't have prices for ${username}!`
+				});
+				return;
+			}
+
+			if (!err && rows.length <= 0) {
+				app.discord.sendMessage({
+					to: app.message.channelID,
+					message: `Sorry! I don't have prices for anyone this week :(`
+				});
+				return;
+			}
+
+			let predictionUrls = [];
+			let stats = [
+				'User'.padEnd(13) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10)
+			];
+			for (let i = 0; i < rows.length; i++) {
+				let row = rows[i];
+				let rowturnupPredictionLink = turnupPredictionLink
+					+       (row.sunam ?? 0) + '.' + (row.monam ?? 0) + '.' + (row.monpm ?? 0)
+					+ '.' + (row.tueam ?? 0) + '.' + (row.tuepm ?? 0) + '.' + (row.wedam ?? 0)
+					+ '.' + (row.wedpm ?? 0) + '.' + (row.thuam ?? 0) + '.' + (row.thupm ?? 0)
+					+ '.' + (row.friam ?? 0) + '.' + (row.fripm ?? 0) + '.' + (row.satam ?? 0)
+					+ '.' + (row.satpm ?? 0);
+				let formattedLink = `[${row.username}](${rowturnupPredictionLink})`
+				predictionUrls.push(formattedLink);
+				let sunamnt = (row.sunam ?? '0') + '';
+				let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
+				stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}`);
+			}
+
+			app.discord.sendMessage({
+				to: app.message.channelID,
+				message: 'Yeah you! Oh yeah! Put it in your mouth!',
+				embed: {
+					title: `Week ${week} of ${year} Turnup Prices`,
+					fields: [
+						{
+							name: 'Predictions',
+							value: predictionUrls.join(', ')
+						},
+						{
+							name: 'Today Prices',
+							value: `\`\`\`${stats.join('\n')}\`\`\``
+						}
+					],
+					footer: {
+						text: 'Brought to you buy fredlawl'
+					}
+				},
 			});
 		});
 	});

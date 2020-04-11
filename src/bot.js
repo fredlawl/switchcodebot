@@ -47,6 +47,7 @@ const commandRegistry = new CommandRegistry();
 commandRegistry.register('^disfakka$', cmds.disfakka);
 commandRegistry.register('^sw$', cmds.switchcode);
 commandRegistry.register('^addturnup$', cmds.addturnup);
+commandRegistry.register('^yeahyou$', cmds.yeahyou);
 
 // Initialize Discord Bot
 const bot = new Discord.Client({
