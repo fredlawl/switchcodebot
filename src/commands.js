@@ -1,6 +1,5 @@
 import { TurnupDateCalculator } from "./turnup-date-calculator";
-
-const parser = require('./parser');
+import { convertUTCTimezoneToLocal, parseSwitchCode, parseMessage } from "./parser";
 
 module.exports.disfakka = function (app) {
 	app.discord.sendMessage({
@@ -11,7 +10,7 @@ module.exports.disfakka = function (app) {
 };
 
 module.exports.switchcode = function (app, code) {
-	let parsedSwitchCode = parser.parseSwitchCode(code);
+	let parsedSwitchCode = parseSwitchCode(code);
 
 	if (parsedSwitchCode.length <= 0) {
 		app.discord.sendMessage({
@@ -36,7 +35,7 @@ module.exports.switchcode = function (app, code) {
 
 module.exports.addturnup = function (app, amount, userdaytime) {
 	const helpMessage = `Command usage: \`!addturnup amount [day[am | pm]]\`:
-		\tamount -  is required, and must be a positive integer.
+		\tamount - Must be a positive integer.
 		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.\nIf you make a mistake, you can always change your logged numbers at any time throughout the week.`
 
 	const userId = app.message.userID;
@@ -120,7 +119,7 @@ module.exports.turnups = function (app, username) {
 				console.log(now.getTime(), err);
 				app.discord.sendMessage({
 					to: app.message.channelID,
-					message: `Sorry! I show peoples prices! Ask the bot admin for help! (${now.getTime()})`
+					message: `Sorry! I couldn't show peoples prices! Ask the bot admin for help! (${now.getTime()})`
 				});
 				return;
 			}
@@ -180,6 +179,83 @@ module.exports.turnups = function (app, username) {
 						text: 'Brought to you by fredlawl'
 					}
 				},
+			});
+		});
+	});
+
+	return true;
+}
+
+
+module.exports.timezone = function (app, timezone)
+{
+	const now = new Date(app.message.event.d.timestamp);
+	const userId = app.message.userID;
+	const helpUsage = `Command usage: \`!timezone [help | timezone]\`:
+		\thelp (optional) - Shows this message.
+		\ttimezone (optional) - Set your timezone; eg. America/Chicago for U.S. Central timezone (see below for full list).\nWhen not specifying options, this will list your current set timezone.`
+	const helpMessage = {
+		to: app.message.channelID,
+		message: `${helpUsage}`,
+		embed: {
+			title: 'List of timezones',
+			url: 'https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
+		}
+	};
+
+	if (timezone && timezone.toLowerCase().localeCompare('help') === 0) {
+		app.discord.sendMessage(helpMessage);
+		return true;
+	} else if (timezone) {
+		if (!convertUTCTimezoneToLocal(now, timezone)) {
+			app.discord.sendMessage(helpMessage);
+			return true;
+		}
+	} else {
+		timezone = null;
+	}
+
+	app.db.serialize(function () {
+
+		if (!timezone) {
+			app.db.all(`SELECT timezone FROM userMeta WHERE userId = ?`, [
+				userId
+			], function (err, rows) {
+				if (err || rows.length <= 0) {
+					if (err) {
+						console.log(now.getTime(), err);
+					}
+
+					app.discord.sendMessage({
+						to: app.message.channelID,
+						message: `<@${userId}> Sorry! I don't have a timezone for you. Type \`!timezone help\` to learn how to set it!`
+					});
+					return;
+				}
+
+				app.discord.sendMessage({
+					to: app.message.channelID,
+					message: `<@${userId}> Your timezone is: ${rows[0].timezone}`
+				});
+			});
+			return;
+		}
+
+		app.db.run(`INSERT INTO userMeta (userId, timezone) VALUES (?, ?) ON CONFLICT(userId) DO UPDATE SET timezone = ?;`, [
+			userId, timezone, timezone
+		], function (err) {
+			if (err) {
+				console.log(now.getTime(), err);
+				app.discord.sendMessage({
+					to: app.message.channelID,
+					message: `Sorry! I couldn't set your timezone! Ask the bot admin for help! (${now.getTime()})`
+				});
+				return;
+			}
+
+			app.discord.sendMessage({
+				to: app.message.channelID,
+				message: `<@${userId}> Your timezone is now set to: ${timezone}`
 			});
 		});
 	});

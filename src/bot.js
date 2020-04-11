@@ -12,6 +12,13 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(function () {
+	/*
+	 * TODO: Figure out a way to handle multiple servers such that
+	 *  a user logs a record once, but only the servers the user
+	 *  belongs to can see that users stats. Right now, if this
+	 *  were on multiple servers, everyone would be listed.
+	 *  Maybe that's okay?
+	 */
 	db.run(`
 		CREATE TABLE IF NOT EXISTS turnupRecords (
 			userId INT(11) NOT NULL,
@@ -34,6 +41,14 @@ db.serialize(function () {
 			PRIMARY KEY(userId, week, year)
 		)
 	`);
+
+	db.run(`
+		CREATE TABLE IF NOT EXISTS userMeta (
+			userId INT(11) NOT NULL,
+			timezone VARCHAR(128) NULL,
+			PRIMARY KEY(userId)
+		)
+	`);
 });
 
 // Configure logger settings
@@ -48,6 +63,7 @@ commandRegistry.register('^disfakka$', cmds.disfakka);
 commandRegistry.register('^sw$', cmds.switchcode);
 commandRegistry.register('^addturnup$', cmds.addturnup);
 commandRegistry.register('^turnups$', cmds.turnups);
+commandRegistry.register('^timezone$', cmds.timezone);
 
 // Initialize Discord Bot
 const bot = new Discord.Client({
@@ -85,6 +101,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 		message: {
 			user: user,
 			userID: userID,
+			serverID: evt.d.guild_id,
 			channelID: channelID,
 			message: message,
 			event: evt

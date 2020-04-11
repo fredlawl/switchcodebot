@@ -39,3 +39,15 @@ module.exports.parseSwitchCode = function (code)
 
 	return final;
 }
+
+module.exports.convertUTCTimezoneToLocal = function(date, timezone)
+{
+	try {
+		const utc = new Date(date.toISOString());
+		return new Date((new Date(utc.getTime())).toLocaleString('en-US', {
+			timeZone: timezone
+		}));
+	} catch (e) {
+		return null;
+	}
+}

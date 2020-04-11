@@ -56,3 +56,17 @@ describe('parseSwitchCode', () => {
 		expect(actual).toBe('');
 	});
 });
+
+
+describe('convertUTCTimezoneToLocal', () => {
+	test('given good timezone, correctly parse date', () => {
+		const date = new Date('2020-04-11T15:00:00.000Z');
+		const actual = parser.convertUTCTimezoneToLocal(date, 'America/Chicago');
+		expect(actual).toEqual(new Date('2020-04-11T15:00:00.000Z'));
+	});
+
+	test('given bad timezone, give us null date', () => {
+		const actual = parser.convertUTCTimezoneToLocal(new Date(), 'asdfasdfadf');
+		expect(actual).toEqual(null);
+	});
+});
