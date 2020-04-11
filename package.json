@@ -22,7 +22,8 @@
   "@babel/plugin-proposal-class-properties": "^7.8.3",
   "@babel/preset-env": "^7.9.5",
   "babel-jest": "^25.3.0",
-  "jest": "^25.3.0"
+  "jest": "^25.3.0",
+  "regenerator-runtime": "^0.13.5"
  },
  "scripts": {
   "test": "jest",

@@ -1,5 +1,21 @@
+import regeneratorRuntime from "regenerator-runtime";
 import { TurnupDateCalculator } from "./turnup-date-calculator";
 import { convertUTCTimezoneToLocal, parseSwitchCode, parseMessage } from "./parser";
+
+function getUserMeta(db, userId)
+{
+	return new Promise((resolve, reject) => {
+		db.get(`SELECT * FROM userMeta WHERE userId = ?`, [
+			userId
+		], function (err, row) {
+			if (err) {
+				reject(err);
+			}
+
+			resolve(row);
+		});
+	});
+}
 
 module.exports.disfakka = function (app) {
 	app.discord.sendMessage({
@@ -187,7 +203,7 @@ module.exports.turnups = function (app, username) {
 }
 
 
-module.exports.timezone = function (app, timezone)
+async function timezone(app, timezone)
 {
 	const now = new Date(app.message.event.d.timestamp);
 	const userId = app.message.userID;
@@ -215,50 +231,46 @@ module.exports.timezone = function (app, timezone)
 		timezone = null;
 	}
 
-	app.db.serialize(function () {
+	if (!timezone) {
 
-		if (!timezone) {
-			app.db.all(`SELECT timezone FROM userMeta WHERE userId = ?`, [
-				userId
-			], function (err, rows) {
-				if (err || rows.length <= 0) {
-					if (err) {
-						console.log(now.getTime(), err);
-					}
+		let row = await getUserMeta(app.db, userId).catch((err) => {
+			console.log(now.getTime(), err);
+		});
 
-					app.discord.sendMessage({
-						to: app.message.channelID,
-						message: `<@${userId}> Sorry! I don't have a timezone for you. Type \`!timezone help\` to learn how to set it!`
-					});
-					return;
-				}
+		if (typeof row !== 'undefined') {
+			app.discord.sendMessage({
+				to: app.message.channelID,
+				message: `<@${userId}> Your timezone is: ${row.timezone}`
+			});
+		} else {
+			app.discord.sendMessage({
+				to: app.message.channelID,
+				message: `<@${userId}> Sorry! I don't have a timezone for you. Type \`!timezone help\` to learn how to set it!`
+			});
+		}
 
-				app.discord.sendMessage({
-					to: app.message.channelID,
-					message: `<@${userId}> Your timezone is: ${rows[0].timezone}`
-				});
+		return;
+	}
+
+	app.db.run(`INSERT INTO userMeta (userId, timezone) VALUES (?, ?) ON CONFLICT(userId) DO UPDATE SET timezone = ?;`, [
+		userId, timezone, timezone
+	], function (err) {
+		if (err) {
+			console.log(now.getTime(), err);
+			app.discord.sendMessage({
+				to: app.message.channelID,
+				message: `Sorry! I couldn't set your timezone! Ask the bot admin for help! (${now.getTime()})`
 			});
 			return;
 		}
 
-		app.db.run(`INSERT INTO userMeta (userId, timezone) VALUES (?, ?) ON CONFLICT(userId) DO UPDATE SET timezone = ?;`, [
-			userId, timezone, timezone
-		], function (err) {
-			if (err) {
-				console.log(now.getTime(), err);
-				app.discord.sendMessage({
-					to: app.message.channelID,
-					message: `Sorry! I couldn't set your timezone! Ask the bot admin for help! (${now.getTime()})`
-				});
-				return;
-			}
-
-			app.discord.sendMessage({
-				to: app.message.channelID,
-				message: `<@${userId}> Your timezone is now set to: ${timezone}`
-			});
+		app.discord.sendMessage({
+			to: app.message.channelID,
+			message: `<@${userId}> Your timezone is now set to: ${timezone}`
 		});
 	});
 
 	return true;
 }
+
+module.exports.timezone = timezone;
