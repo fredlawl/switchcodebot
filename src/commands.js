@@ -96,15 +96,6 @@ module.exports.addturnup = function (app, amount, daytime) {
 		+ parsedDaytime.slice(1, 3)
 		+ '. ' + parsedDaytime.slice(3).toUpperCase();
 
-	let postfix = 'th';
-	if (week === 1) {
-		postfix = 'st';
-	} else if (week === 2) {
-		postfix = 'nd';
-	} else if (week === 3) {
-		postfix = 'rd';
-	}
-
 	app.db.serialize(function () {
 		app.db.run(`INSERT INTO turnupRecords (userId, username, week, year, ${parsedDaytime}) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET ${parsedDaytime} = ?;`, [
 			userId, user, week, year, amount, amount
@@ -112,7 +103,7 @@ module.exports.addturnup = function (app, amount, daytime) {
 			if (!err) {
 				app.discord.sendMessage({
 					to: app.message.channelID,
-					message: `@${user} I added the price ${amount} to the ${week}${postfix} week of ${year} - ${formattedDay}.`
+					message: `@${user} I added the price ${amount} to the ${week} week of ${year} - ${formattedDay}.`
 				});
 				return;
 			}
