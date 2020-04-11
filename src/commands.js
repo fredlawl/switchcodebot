@@ -37,7 +37,7 @@ module.exports.switchcode = function (app, code) {
 module.exports.addturnup = function (app, amount, daytime) {
 	const helpMessage = `Command usage: \`!addturnup amount [day[am | pm]]\`:
 		\tamount -  is required, and must be a positive integer.
-		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.`
+		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.\nIf you make a mistake, you can always change your logged numbers at any time throughout the week.`
 
 	const daytimeLookup = {
 		['sunam']: 0,
