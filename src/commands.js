@@ -16,7 +16,7 @@ module.exports.switchcode = function (app, code) {
 	if (parsedSwitchCode.length <= 0) {
 		app.discord.sendMessage({
 			to: app.message.channelID,
-			message: `@${app.message.user} the switch code must be in the correct format: SW-1234-1234-1234`
+			message: `<@${app.message.userID}> the switch code must be in the correct format: SW-1234-1234-1234`
 		});
 		return true;
 	}
@@ -108,7 +108,7 @@ module.exports.addturnup = function (app, amount, daytime) {
 			if (!err) {
 				app.discord.sendMessage({
 					to: app.message.channelID,
-					message: `@${user} I added the price ${amount} to the ${week} week of ${year} - ${formattedDay}.`
+					message: `<@${userId}> I added the price ${amount} to the ${week} week of ${year} - ${formattedDay}.`
 				});
 				return;
 			}
@@ -116,7 +116,7 @@ module.exports.addturnup = function (app, amount, daytime) {
 			console.log(now.getTime(), err);
 			app.discord.sendMessage({
 				to: app.message.channelID,
-				message: `Sorry! I couldn't log your turnup price! Ask @fredlawl#0879 for help! (${now.getTime()})`
+				message: `Sorry! I couldn't log your turnup price! Ask the bot admin for help! (${now.getTime()})`
 			});
 		});
 	});
@@ -148,7 +148,7 @@ module.exports.yeahyou = function (app, username) {
 				console.log(now.getTime(), err);
 				app.discord.sendMessage({
 					to: app.message.channelID,
-					message: `Sorry! I show peoples prices! Ask @fredlawl#0879 for help! (${now.getTime()})`
+					message: `Sorry! I show peoples prices! Ask the bot admin for help! (${now.getTime()})`
 				});
 				return;
 			}
