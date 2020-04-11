@@ -1,4 +1,4 @@
-import { isBefore, isAfter, getISOWeek  } from 'date-fns'
+import { TurnupDateCalculator } from "./turnup-date-calculator";
 
 const parser = require('./parser');
 
@@ -34,35 +34,15 @@ module.exports.switchcode = function (app, code) {
 	return true;
 };
 
-module.exports.addturnup = function (app, amount, daytime) {
+module.exports.addturnup = function (app, amount, userdaytime) {
 	const helpMessage = `Command usage: \`!addturnup amount [day[am | pm]]\`:
 		\tamount -  is required, and must be a positive integer.
 		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.\nIf you make a mistake, you can always change your logged numbers at any time throughout the week.`
 
-	const daytimeLookup = {
-		['sunam']: 0,
-		['monam']: 1,
-		['monpm']: 1,
-		['tueam']: 2,
-		['tuepm']: 2,
-		['wedam']: 3,
-		['wedpm']: 3,
-		['thuram']: 4,
-		['thurpm']: 4,
-		['friam']: 5,
-		['fripm']: 5,
-		['satam']: 6,
-		['satpm']: 6,
-	}
-
-	const dayLookupTable = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-	const timeLookupTable = ['pm', 'am'];
-
 	const userId = app.message.userID;
 	const user = app.message.user;
-	const now = (new Date());
-	const year = now.getFullYear();
-	const week = getISOWeek(now);
+	let now = new Date();
+	let turnupDateCalc;
 
 	let parsedAmount = parseInt(amount);
 	if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -73,22 +53,11 @@ module.exports.addturnup = function (app, amount, daytime) {
 		return;
 	}
 
-	const isSunday = now.getDay() === 0;
-	let today = dayLookupTable[now.getDay()];
-	let isMorning =
-		(isAfter(now, (new Date().setHours(7, 59, 59, 0)))
-		&& isBefore(now, (new Date().setHours(11, 59, 59, 0)))) * 1;
+	if (typeof userdaytime !== 'undefined') {
+		userdaytime = userdaytime.toLowerCase();
+		now = TurnupDateCalculator.convertDaystringToDate(now, userdaytime);
 
-	let parsedDaytime = 'sunam';
-	if (!isSunday) {
-		parsedDaytime = today + timeLookupTable[isMorning];
-	}
-
-	if (typeof daytime !== 'undefined') {
-		daytime = daytime.toLowerCase();
-		if (typeof daytimeLookup[daytime] !== 'undefined') {
-			parsedDaytime = daytime;
-		} else if (!isSunday) {
+		if (!now) {
 			app.discord.sendMessage({
 				to: app.message.channelID,
 				message: helpMessage
@@ -97,12 +66,17 @@ module.exports.addturnup = function (app, amount, daytime) {
 		}
 	}
 
-	const formattedDay = parsedDaytime.slice(0, 3).charAt(0).toUpperCase()
-		+ parsedDaytime.slice(1, 3)
-		+ '. ' + parsedDaytime.slice(3).toUpperCase();
+	turnupDateCalc = new TurnupDateCalculator(now);
+	const week = turnupDateCalc.week;
+	const year = turnupDateCalc.year;
+	const formattedDay = turnupDateCalc.formattedAbbreviation;
+	let column = turnupDateCalc.fullAbbreviation;
+	if (turnupDateCalc.isSunday) {
+		column = 'buy';
+	}
 
 	app.db.serialize(function () {
-		app.db.run(`INSERT INTO turnupRecords (userId, username, week, year, ${parsedDaytime}) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET ${parsedDaytime} = ?;`, [
+		app.db.run(`INSERT INTO turnupRecords (userId, username, week, year, ${column}) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET ${column} = ?;`, [
 			userId, user, week, year, amount, amount
 		], function (err) {
 			if (!err) {
@@ -124,16 +98,14 @@ module.exports.addturnup = function (app, amount, daytime) {
 	return true;
 }
 
-module.exports.yeahyou = function (app, username) {
+module.exports.turnups = function (app, username) {
 	const userId = app.message.userID;
-	const now = (new Date());
-	const year = now.getFullYear();
-	const week = getISOWeek(now);
+	const now = new Date();
+	const turnupDateCalc = new TurnupDateCalculator(now);
+	const year = turnupDateCalc.year;
+	const week = turnupDateCalc.week;
+	const today = turnupDateCalc.todayAbbreviation;
 	let turnupPredictionLink = 'https://turnipprophet.io/index.html?first-time=false&prices='
-
-	const dayLookupTable = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-
-	let today = dayLookupTable[now.getDay()];
 
 	app.db.serialize(function () {
 		let usernameClause = '';
@@ -177,14 +149,14 @@ module.exports.yeahyou = function (app, username) {
 			for (let i = 0; i < rows.length; i++) {
 				let row = rows[i];
 				let rowturnupPredictionLink = turnupPredictionLink
-					+       (row.sunam ?? 0) + '.' + (row.monam ?? 0) + '.' + (row.monpm ?? 0)
+					+       (row.buy ?? 0) + '.' + (row.monam ?? 0) + '.' + (row.monpm ?? 0)
 					+ '.' + (row.tueam ?? 0) + '.' + (row.tuepm ?? 0) + '.' + (row.wedam ?? 0)
 					+ '.' + (row.wedpm ?? 0) + '.' + (row.thuam ?? 0) + '.' + (row.thupm ?? 0)
 					+ '.' + (row.friam ?? 0) + '.' + (row.fripm ?? 0) + '.' + (row.satam ?? 0)
 					+ '.' + (row.satpm ?? 0);
 				let formattedLink = `[${row.username}](${rowturnupPredictionLink})`
 				predictionUrls.push(formattedLink);
-				let sunamnt = (row.sunam ?? '0') + '';
+				let sunamnt = (row.buy ?? '0') + '';
 				let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
 				stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}`);
 			}
@@ -205,7 +177,7 @@ module.exports.yeahyou = function (app, username) {
 						}
 					],
 					footer: {
-						text: 'Brought to you buy fredlawl'
+						text: 'Brought to you by fredlawl'
 					}
 				},
 			});

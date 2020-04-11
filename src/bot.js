@@ -18,7 +18,7 @@ db.serialize(function () {
 			username VARCHAR(255) NOT NULL,
 			week INT(11) NOT NULL,
 			year INT(11) NOT NULL,
-			sunam INT(11) NULL,
+			buy INT(11) NULL,
 			monam INT(11) NULL,
 			monpm INT(11) NULL,
 			tueam INT(11) NULL,
@@ -47,7 +47,7 @@ const commandRegistry = new CommandRegistry();
 commandRegistry.register('^disfakka$', cmds.disfakka);
 commandRegistry.register('^sw$', cmds.switchcode);
 commandRegistry.register('^addturnup$', cmds.addturnup);
-commandRegistry.register('^yeahyou$', cmds.yeahyou);
+commandRegistry.register('^turnups$', cmds.turnups);
 
 // Initialize Discord Bot
 const bot = new Discord.Client({
@@ -78,7 +78,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 		return;
 	}
 
-    // Put bot into first argument so that commands can send stuff back
+	// Put bot into first argument so that commands can send stuff back
 	let args = parsedMessage.args;
 	args.unshift({
 		discord: bot,
@@ -92,8 +92,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 		db: db
 	});
 
-    let executeResult = commandRegistry.execute(parsedMessage.cmd, args);
-    if (!executeResult) {
-    	logger.error(`${parsedMessage.cmd} failed to execute`);
+	let executeResult = commandRegistry.execute(parsedMessage.cmd, args);
+	if (!executeResult) {
+		logger.error(`${parsedMessage.cmd} failed to execute`);
 	}
 });
