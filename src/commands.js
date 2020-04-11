@@ -1,5 +1,5 @@
 import regeneratorRuntime from "regenerator-runtime";
-import { TurnupDateCalculator } from "./turnup-date-calculator";
+import { TurnipDateCalculator } from "./turnip-date-calculator";
 import { convertUTCTimezoneToLocal, parseSwitchCode, parseMessage } from "./parser";
 
 function getUserMeta(db, userId)
@@ -49,49 +49,56 @@ module.exports.switchcode = function (app, code) {
 	return true;
 };
 
-module.exports.addturnup = function (app, amount, userdaytime) {
-	const helpMessage = `Command usage: \`!addturnup amount [day[am | pm]]\`:
+async function addTurnip(app, amount, userdaytime) {
+	const helpMessage = `Command usage: \`!addturnip amount [day[am | pm]]\`:
 		\tamount - Must be a positive integer.
 		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.\nIf you make a mistake, you can always change your logged numbers at any time throughout the week.`
 
+	const helpMessageObj = {
+		to: app.message.channelID,
+		message: helpMessage
+	};
+
 	const userId = app.message.userID;
 	const user = app.message.user;
-	let now = new Date();
-	let turnupDateCalc;
+	let now = new Date(app.message.event.d.timestamp);
+	let turnipDateCalc;
 
 	let parsedAmount = parseInt(amount);
 	if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-		app.discord.sendMessage({
-			to: app.message.channelID,
-			message: helpMessage
-		});
+		app.discord.sendMessage(helpMessageObj);
 		return;
+	}
+
+	const userMeta = await getUserMeta(app.db, userId).catch((err) => {
+		console.log(now.getTime(), err);
+	});
+
+	if (typeof userMeta !== 'undefined') {
+		now = convertUTCTimezoneToLocal(now, userMeta.timezone);
 	}
 
 	if (typeof userdaytime !== 'undefined') {
 		userdaytime = userdaytime.toLowerCase();
-		now = TurnupDateCalculator.convertDaystringToDate(now, userdaytime);
+		now = TurnipDateCalculator.convertDaystringToDate(now, userdaytime);
 
 		if (!now) {
-			app.discord.sendMessage({
-				to: app.message.channelID,
-				message: helpMessage
-			});
+			app.discord.sendMessage(helpMessageObj);
 			return;
 		}
 	}
 
-	turnupDateCalc = new TurnupDateCalculator(now);
-	const week = turnupDateCalc.week;
-	const year = turnupDateCalc.year;
-	const formattedDay = turnupDateCalc.formattedAbbreviation;
-	let column = turnupDateCalc.fullAbbreviation;
-	if (turnupDateCalc.isSunday) {
+	turnipDateCalc = new TurnipDateCalculator(now);
+	const week = turnipDateCalc.week;
+	const year = turnipDateCalc.year;
+	const formattedDay = turnipDateCalc.formattedAbbreviation;
+	let column = turnipDateCalc.fullAbbreviation;
+	if (turnipDateCalc.isSunday) {
 		column = 'buy';
 	}
 
 	app.db.serialize(function () {
-		app.db.run(`INSERT INTO turnupRecords (userId, username, week, year, ${column}) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET ${column} = ?;`, [
+		app.db.run(`INSERT INTO turnipRecords (userId, username, week, year, ${column}) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET ${column} = ?;`, [
 			userId, user, week, year, amount, amount
 		], function (err) {
 			if (!err) {
@@ -105,7 +112,7 @@ module.exports.addturnup = function (app, amount, userdaytime) {
 			console.log(now.getTime(), err);
 			app.discord.sendMessage({
 				to: app.message.channelID,
-				message: `Sorry! I couldn't log your turnup price! Ask the bot admin for help! (${now.getTime()})`
+				message: `Sorry! I couldn't log your turnip price! Ask the bot admin for help! (${now.getTime()})`
 			});
 		});
 	});
@@ -113,14 +120,16 @@ module.exports.addturnup = function (app, amount, userdaytime) {
 	return true;
 }
 
-module.exports.turnups = function (app, username) {
+module.exports.addturnip = addTurnip;
+
+module.exports.turnips = function (app, username) {
 	const userId = app.message.userID;
-	const now = new Date();
-	const turnupDateCalc = new TurnupDateCalculator(now);
-	const year = turnupDateCalc.year;
-	const week = turnupDateCalc.week;
-	const today = turnupDateCalc.todayAbbreviation;
-	let turnupPredictionLink = 'https://turnipprophet.io/index.html?first-time=false&prices='
+	const now = new Date(app.message.event.d.timestamp);
+	const turnipDateCalc = new TurnipDateCalculator(now);
+	const year = turnipDateCalc.year;
+	const week = turnipDateCalc.week;
+	const today = turnipDateCalc.todayAbbreviation;
+	let turnipPredictionLink = 'https://turnipprophet.io/index.html?first-time=false&prices='
 
 	app.db.serialize(function () {
 		let usernameClause = '';
@@ -128,7 +137,7 @@ module.exports.turnups = function (app, username) {
 			usernameClause = 'AND username = ?'
 		}
 
-		app.db.all(`SELECT * FROM turnupRecords WHERE year = ? AND week = ? ${usernameClause}`, [
+		app.db.all(`SELECT * FROM turnipRecords WHERE year = ? AND week = ? ${usernameClause}`, [
 			year, week, username
 		], function (err, rows) {
 			if (err) {
@@ -163,13 +172,13 @@ module.exports.turnups = function (app, username) {
 			];
 			for (let i = 0; i < rows.length; i++) {
 				let row = rows[i];
-				let rowturnupPredictionLink = turnupPredictionLink
+				let rowturnipPredictionLink = turnipPredictionLink
 					+       (row.buy ?? 0) + '.' + (row.monam ?? 0) + '.' + (row.monpm ?? 0)
 					+ '.' + (row.tueam ?? 0) + '.' + (row.tuepm ?? 0) + '.' + (row.wedam ?? 0)
 					+ '.' + (row.wedpm ?? 0) + '.' + (row.thuam ?? 0) + '.' + (row.thupm ?? 0)
 					+ '.' + (row.friam ?? 0) + '.' + (row.fripm ?? 0) + '.' + (row.satam ?? 0)
 					+ '.' + (row.satpm ?? 0);
-				let formattedLink = `[${row.username}](${rowturnupPredictionLink})`
+				let formattedLink = `[${row.username}](${rowturnipPredictionLink})`
 				predictionUrls.push(formattedLink);
 				let sunamnt = (row.buy ?? '0') + '';
 				let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
@@ -180,7 +189,7 @@ module.exports.turnups = function (app, username) {
 				to: app.message.channelID,
 				message: 'Yeah you! Oh yeah! Put it in your mouth!',
 				embed: {
-					title: `Week ${week} of ${year} Turnup Prices`,
+					title: `Week ${week} of ${year} Turnip Prices`,
 					fields: [
 						{
 							name: 'Predictions',
@@ -201,7 +210,6 @@ module.exports.turnups = function (app, username) {
 
 	return true;
 }
-
 
 async function timezone(app, timezone)
 {
@@ -233,14 +241,14 @@ async function timezone(app, timezone)
 
 	if (!timezone) {
 
-		let row = await getUserMeta(app.db, userId).catch((err) => {
+		let userMeta = await getUserMeta(app.db, userId).catch((err) => {
 			console.log(now.getTime(), err);
 		});
 
-		if (typeof row !== 'undefined') {
+		if (userMeta) {
 			app.discord.sendMessage({
 				to: app.message.channelID,
-				message: `<@${userId}> Your timezone is: ${row.timezone}`
+				message: `<@${userId}> Your timezone is: ${userMeta.timezone}`
 			});
 		} else {
 			app.discord.sendMessage({

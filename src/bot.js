@@ -20,7 +20,7 @@ db.serialize(function () {
 	 *  Maybe that's okay?
 	 */
 	db.run(`
-		CREATE TABLE IF NOT EXISTS turnupRecords (
+		CREATE TABLE IF NOT EXISTS turnipRecords (
 			userId INT(11) NOT NULL,
 			username VARCHAR(255) NOT NULL,
 			week INT(11) NOT NULL,
@@ -61,8 +61,8 @@ logger.level = 'debug';
 const commandRegistry = new CommandRegistry();
 commandRegistry.register('^disfakka$', cmds.disfakka);
 commandRegistry.register('^sw$', cmds.switchcode);
-commandRegistry.register('^addturnup$', cmds.addturnup);
-commandRegistry.register('^turnups$', cmds.turnups);
+commandRegistry.register('^addturnip$', cmds.addturnip);
+commandRegistry.register('^turnips$', cmds.turnips);
 commandRegistry.register('^timezone$', cmds.timezone);
 
 // Initialize Discord Bot

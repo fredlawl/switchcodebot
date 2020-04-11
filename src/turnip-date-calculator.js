@@ -1,6 +1,6 @@
 import { isBefore, getISOWeek, addWeeks, setISOWeek, getISOWeekYear } from 'date-fns'
 
-export class TurnupDateCalculator
+export class TurnipDateCalculator
 {
 	/**
 	 * Look
@@ -91,7 +91,7 @@ export class TurnupDateCalculator
 
 	/**
 	 * Because week() will produce a week in the future, our year could be off.
-	 * Therefore, this function correctly fetches the turnup year.
+	 * Therefore, this function correctly fetches the turnip year.
 	 * @return {number}
 	 */
 	get year()
@@ -111,7 +111,7 @@ export class TurnupDateCalculator
 
 	get todayAbbreviation()
 	{
-		return TurnupDateCalculator.reverseAbbreviatedDayLookupTable[this.now.getDay()];
+		return TurnipDateCalculator.reverseAbbreviatedDayLookupTable[this.now.getDay()];
 	}
 
 	get timeAbbreviation()
