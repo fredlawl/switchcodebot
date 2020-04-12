@@ -9,7 +9,7 @@ const path = require('path')
 
 const dbPath = path.resolve(__dirname, 'switchcodebot.db')
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(dbPath);
+let db = new sqlite3.Database(dbPath);
 
 db.serialize(function () {
 	/*
@@ -72,7 +72,12 @@ const bot = new Discord.Client({
 });
 
 bot.on('any', function (event) {
-	console.log(event);
+	if (event.op === 7) {
+		db.close();
+		bot.disconnect();
+		bot.connect();
+		db = new sqlite3.Database(dbPath);
+	}
 });
 
 bot.on('disconnect', function (errorMessage, code) {
