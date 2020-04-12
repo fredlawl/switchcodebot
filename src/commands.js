@@ -122,9 +122,18 @@ async function addTurnip(app, amount, userdaytime) {
 
 module.exports.addturnip = addTurnip;
 
-module.exports.turnips = function (app, username) {
+async function turnips (app, username) {
 	const userId = app.message.userID;
-	const now = new Date(app.message.event.d.timestamp);
+	let now = new Date(app.message.event.d.timestamp);
+
+	const userMeta = await getUserMeta(app.db, userId).catch((err) => {
+		console.log(now.getTime(), err);
+	});
+
+	if (typeof userMeta !== 'undefined') {
+		now = convertUTCTimezoneToLocal(now, userMeta.timezone);
+	}
+
 	const turnipDateCalc = new TurnipDateCalculator(now);
 	const year = turnipDateCalc.year;
 	const week = turnipDateCalc.week;
@@ -210,6 +219,8 @@ module.exports.turnips = function (app, username) {
 
 	return true;
 }
+
+module.exports.turnips = turnips;
 
 async function timezone(app, timezone)
 {
