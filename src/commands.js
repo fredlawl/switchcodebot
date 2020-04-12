@@ -37,7 +37,7 @@ module.exports.switchcode = function (app, code) {
 	return true;
 };
 
-async function addTurnip(app, amount, userdaytime) {
+module.exports.addturnip = async function (app, amount, userdaytime) {
 	const helpMessage = `Command usage: \`!addturnip amount [day[am | pm]]\`:
 		\tamount - Must be a positive integer.
 		\tdaytime (optional) - Format: abbreviated day + cycle. eg. monam/pm for monday.\nIf you make a mistake, you can always change your logged numbers at any time throughout the week.`
@@ -95,9 +95,7 @@ async function addTurnip(app, amount, userdaytime) {
 	return true;
 }
 
-module.exports.addturnip = addTurnip;
-
-async function turnips (app, username) {
+module.exports.turnips = async function (app, username) {
 	const userId = app.message.author.id;
 	let now = new Date(app.message.createdAt.getTime());
 
@@ -183,9 +181,7 @@ async function turnips (app, username) {
 	return true;
 }
 
-module.exports.turnips = turnips;
-
-async function timezone(app, timezone)
+module.exports.timezone = async function (app, timezone)
 {
 	const now = new Date(app.message.createdAt.getTime());;
 	const userId = app.message.author.id;
@@ -240,5 +236,3 @@ async function timezone(app, timezone)
 
 	return true;
 }
-
-module.exports.timezone = timezone;
