@@ -1,6 +1,6 @@
 import { CommandRegistry } from "./command-registry";
 
-const Discord = require('discord.io');
+const Discord = require('discord.js');
 const logger = require('winston');
 const auth = require('../auth.json');
 const cmds = require('./commands.js');
@@ -66,68 +66,37 @@ commandRegistry.register('turnips', cmds.turnips);
 commandRegistry.register('timezone', cmds.timezone);
 
 // Initialize Discord Bot
-const bot = new Discord.Client({
-   token: auth.token,
-   autorun: true
-});
-
-bot.on('any', function (event) {
-	if (event.op === 7) {
-		db.close();
-		bot.disconnect();
-		bot.connect();
-		db = new sqlite3.Database(dbPath);
-	}
-});
+const bot = new Discord.Client();
 
 bot.on('disconnect', function (errorMessage, code) {
 	logger.error(`Disconnected from server with message: ${errorMessage} (${code})`);
 	db.close();
 });
 
-bot.on('ready', function (evt) {
+bot.on('ready', () => {
     logger.info('Connected');
-    logger.info('Logged in as: ');
-    logger.info(bot.username + ' - (' + bot.id + ')');
 });
 
-bot.on('message', function (user, userID, channelID, message, evt) {
+bot.on('message', (msg) => {
 	// Do not handle messages from bots
-	if (evt.d.author.bot) {
+	if (msg.author.bot) {
 		return;
 	}
 
-    let parsedMessage = parser.parseMessage(message);
+	let parsedMessage = parser.parseMessage(msg.content);
     if (!parsedMessage) {
-    	/*
-    	 * Apparently this event is fired pmer the event makes a message, so we'll just
-    	 * prevent further action here until it's figured out how to prevent
-    	 * reading the bots own message.
-    	 * TODO: Make bot not parse back its own message; possibly use the message nonce field
-    	 */
 		return;
 	}
 
-    if (parsedMessage.cmd.localeCompare('help') === 0) {
-    	bot.sendMessage({
-			to: channelID,
-			message: commandRegistry.help
-		});
+	if (parsedMessage.cmd.localeCompare('help') === 0) {
+		msg.channel.send(commandRegistry.help);
     	return;
 	}
 
-	// Put bot into first argument so that commands can send stuff back
+	// 	// Put bot into first argument so that commands can send stuff back
 	let args = parsedMessage.args;
 	args.unshift({
-		discord: bot,
-		message: {
-			user: user,
-			userID: userID,
-			serverID: evt.d.guild_id,
-			channelID: channelID,
-			message: message,
-			event: evt
-		},
+		message: msg,
 		db: db
 	});
 
@@ -135,4 +104,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 	if (!executeResult) {
 		logger.error(`${parsedMessage.cmd} failed to execute`);
 	}
+
 });
+
+bot.login(auth.token);
