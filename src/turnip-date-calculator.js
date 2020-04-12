@@ -109,11 +109,19 @@ export class TurnipDateCalculator
 		return this.now.getDay() === 0;
 	}
 
+	/**
+	 * Returns the mapped day. eg. 0 => sun
+	 * @returns {string}
+	 */
 	get todayAbbreviation()
 	{
 		return TurnipDateCalculator.reverseAbbreviatedDayLookupTable[this.now.getDay()];
 	}
 
+	/**
+	 * Returns am/pm if it's morning or not.
+	 * @returns {string}
+	 */
 	get timeAbbreviation()
 	{
 		return this.isMorning ? 'am' : 'pm';
