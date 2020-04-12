@@ -87,6 +87,11 @@ bot.on('ready', function (evt) {
 });
 
 bot.on('message', function (user, userID, channelID, message, evt) {
+	// Do not handle messages from bots
+	if (evt.d.author.bot) {
+		return;
+	}
+
     let parsedMessage = parser.parseMessage(message);
     if (!parsedMessage) {
     	/*
