@@ -71,8 +71,12 @@ const bot = new Discord.Client({
    autorun: true
 });
 
-bot.on('disconnect', function (event) {
-	logger.error(`Disconnected from server with message: ${event}`);
+bot.on('any', function (event) {
+	console.log(event);
+});
+
+bot.on('disconnect', function (errorMessage, code) {
+	logger.error(`Disconnected from server with message: ${errorMessage} (${code})`);
 	db.close();
 });
 
