@@ -59,11 +59,11 @@ logger.add(new logger.transports.Console, {
 logger.level = 'debug';
 
 const commandRegistry = new CommandRegistry();
-commandRegistry.register('^disfakka$', cmds.disfakka);
-commandRegistry.register('^sw$', cmds.switchcode);
-commandRegistry.register('^addturnip$', cmds.addturnip);
-commandRegistry.register('^turnips$', cmds.turnips);
-commandRegistry.register('^timezone$', cmds.timezone);
+commandRegistry.register('disfakka', cmds.disfakka);
+commandRegistry.register('sw', cmds.switchcode);
+commandRegistry.register('addturnip', cmds.addturnip);
+commandRegistry.register('turnips', cmds.turnips);
+commandRegistry.register('timezone', cmds.timezone);
 
 // Initialize Discord Bot
 const bot = new Discord.Client({
@@ -92,6 +92,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     	 * TODO: Make bot not parse back its own message; possibly use the message nonce field
     	 */
 		return;
+	}
+
+    if (parsedMessage.cmd.localeCompare('help') === 0) {
+    	bot.sendMessage({
+			to: channelID,
+			message: commandRegistry.help
+		});
+    	return;
 	}
 
 	// Put bot into first argument so that commands can send stuff back

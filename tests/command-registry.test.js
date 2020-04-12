@@ -4,7 +4,7 @@ test('register registers command', () => {
     const cmdRegistry = new CommandRegistry();
     let func = () => {};
     cmdRegistry.register('doesnt matter', func);
-    let registry = cmdRegistry.getCommands();
+    let registry = cmdRegistry.commands;
     expect(registry).toEqual({'doesnt matter': func});
 });
 
@@ -14,7 +14,7 @@ test('register only registers duplicate keys once', () => {
     let func2 = () => {};
     cmdRegistry.register('test1', func1);
     cmdRegistry.register('test1', func2);
-    let registry = cmdRegistry.getCommands();
+    let registry = cmdRegistry.commands;
     expect(registry).toEqual({'test1': func1});
     expect(registry).not.toEqual({'test1': func2});
 });
@@ -26,7 +26,7 @@ test('execute command where pattern does not exist', () => {
 
 test('execute command where pattern does exist', () => {
 	const cmdRegistry = new CommandRegistry();
-	cmdRegistry.register('^test$', (args) => {
+	cmdRegistry.register('test', (args) => {
 		return true;
 	});
 
@@ -35,7 +35,7 @@ test('execute command where pattern does exist', () => {
 
 test('execute command should always return bool', () => {
 	const cmdRegistry = new CommandRegistry();
-	cmdRegistry.register('^test$', (args) => {
+	cmdRegistry.register('test', (args) => {
 		return 'something else';
 	});
 
@@ -44,7 +44,7 @@ test('execute command should always return bool', () => {
 
 test('executing command with paramaters works', () => {
 	const cmdRegistry = new CommandRegistry();
-	cmdRegistry.register('^test$', (arg1, arg2) => {
+	cmdRegistry.register('test', (arg1, arg2) => {
 		return arg1 === 'test' && arg2 === 'test2';
 	});
 
@@ -53,7 +53,7 @@ test('executing command with paramaters works', () => {
 
 test('executing command with parameters, but function doesnt have any', () => {
 	const cmdRegistry = new CommandRegistry();
-	cmdRegistry.register('^test$', () => {
+	cmdRegistry.register('test', () => {
 		return true;
 	});
 
