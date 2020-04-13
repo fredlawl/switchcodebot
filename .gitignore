@@ -1,7 +1,7 @@
 .idea
 *.swp
 switchcodebot.db
-
+.DS_Store
 auth.json
 
 node_modules/

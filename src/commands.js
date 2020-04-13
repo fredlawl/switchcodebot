@@ -118,7 +118,13 @@ module.exports.turnips = async function (app, username) {
 		usernameClause = 'AND username = ?'
 	}
 
-	app.db.all(`SELECT * FROM turnipRecords WHERE year = ? AND week = ? ${usernameClause}`, [
+	let primaryOrderColumn = `${turnipDateCalc.fullAbbreviation} DESC`;
+	if (turnipDateCalc.isSunday) {
+		primaryOrderColumn = 'buy ASC'
+	}
+
+	let orderClause = `ORDER BY ${primaryOrderColumn}, buy ASC, username ASC`;
+	app.db.all(`SELECT * FROM turnipRecords WHERE year = ? AND week = ? ${usernameClause} ${orderClause}`, [
 		year, week, username
 	], function (err, rows) {
 		if (err) {
