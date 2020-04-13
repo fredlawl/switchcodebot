@@ -124,7 +124,17 @@ module.exports.turnips = async function (app, username) {
 	}
 
 	let orderClause = `ORDER BY ${primaryOrderColumn}, buy ASC, username ASC`;
-	app.db.all(`SELECT * FROM turnipRecords WHERE year = ? AND week = ? ${usernameClause} ${orderClause}`, [
+	app.db.all(`
+		SELECT
+			tr.*,
+			um.timezone
+		FROM turnipRecords tr
+		LEFT JOIN userMeta um ON um.userId = tr.userId
+		WHERE
+			year = ?
+			AND week = ?
+			${usernameClause}
+			${orderClause}`, [
 		year, week, username
 	], function (err, rows) {
 		if (err) {
@@ -146,10 +156,16 @@ module.exports.turnips = async function (app, username) {
 
 		let predictionUrls = [];
 		let stats = [
-			'User'.padEnd(13) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10)
+			'User'.padEnd(13) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10) + 'Time'.padEnd(4)
 		];
 		for (let i = 0; i < rows.length; i++) {
 			let row = rows[i];
+			let time = new Date(app.message.createdAt.getTime());
+			if (row.timezone) {
+				time = convertUTCTimezoneToLocal(time, row.timezone);
+			}
+
+			let calc = new TurnipDateCalculator(time);
 			let rowturnipPredictionLink = turnipPredictionLink
 				+       (row.buy ?? 0) + '.' + (row.monam ?? 0) + '.' + (row.monpm ?? 0)
 				+ '.' + (row.tueam ?? 0) + '.' + (row.tuepm ?? 0) + '.' + (row.wedam ?? 0)
@@ -160,7 +176,7 @@ module.exports.turnips = async function (app, username) {
 			predictionUrls.push(formattedLink);
 			let sunamnt = (row.buy ?? '0') + '';
 			let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
-			stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}`);
+			stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.timeAbbreviation.toUpperCase().padEnd(4)}`);
 		}
 
 		app.message.channel.send('Yeah you! Oh yeah! Put it in your mouth!', {
