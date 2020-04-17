@@ -180,18 +180,18 @@ module.exports.turnips = async function (app, username) {
 		}
 
 		app.message.channel.send(`Yeah you! Oh yeah! Put it in your mouth!\`\`\`${stats.join('\n')}\`\`\``, {
-			embed: {
-				title: `Week ${week} of ${year} Turnip Prices`,
-				fields: [
-					{
-						name: 'Predictions',
-						value: predictionUrls.join(', ')
-					}
-				],
-				footer: {
-					text: 'Brought to you by fredlawl'
-				}
-			}
+			// embed: {
+			// 	title: `Week ${week} of ${year} Turnip Prices`,
+			// 	fields: [
+			// 		{
+			// 			name: 'Predictions',
+			// 			value: predictionUrls.join(', ')
+			// 		}
+			// 	],
+			// 	footer: {
+			// 		text: 'Brought to you by fredlawl'
+			// 	}
+			// }
 		});
 
 	});
