@@ -179,17 +179,13 @@ module.exports.turnips = async function (app, username) {
 			stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.timeAbbreviation.toUpperCase().padEnd(4)}`);
 		}
 
-		app.message.channel.send('Yeah you! Oh yeah! Put it in your mouth!', {
+		app.message.channel.send(`Yeah you! Oh yeah! Put it in your mouth!\`\`\`${stats.join('\n')}\`\`\``, {
 			embed: {
 				title: `Week ${week} of ${year} Turnip Prices`,
 				fields: [
 					{
 						name: 'Predictions',
 						value: predictionUrls.join(', ')
-					},
-					{
-						name: 'Today Prices',
-						value: `\`\`\`${stats.join('\n')}\`\`\``
 					}
 				],
 				footer: {
