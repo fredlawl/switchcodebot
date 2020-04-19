@@ -54,9 +54,10 @@ By default, this command will provide a turnip report for everyone that recorded
 			return Command.EXIT_GENERAL_ERROR;
 		}
 
+		const usernamePad = 13;
 		let predictionUrls = [];
 		let stats = [
-			'User'.padEnd(13) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10) + 'Time'.padEnd(4)
+			'User'.padEnd(usernamePad) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10) + 'Time'.padEnd(4)
 		];
 		for (let i = 0; i < rows.length; i++) {
 			let row = rows[i];
@@ -76,7 +77,7 @@ By default, this command will provide a turnip report for everyone that recorded
 			predictionUrls.push(formattedLink);
 			let sunamnt = (row.buy ?? '0') + '';
 			let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
-			stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.timeAbbreviation.toUpperCase().padEnd(4)}`);
+			stats.push(`${row.username.substr(0, usernamePad).padEnd(usernamePad)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.timeAbbreviation.toUpperCase().padEnd(4)}`);
 		}
 
 		msg.channel.send(`**Week ${week} of ${year} Turnip Prices:**\`\`\`${stats.join('\n')}\`\`\``, {
