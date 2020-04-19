@@ -88,11 +88,11 @@ This command will report on how much profit you can make compared to other users
 		let tableRows = [
 			[
 				'Username'.padEnd(usernamePad),
-				'Cur. Price'.padEnd(10),
-				'Cur. Time'.padEnd(9),
+				'Cur. Price'.padEnd(11),
+				'Cur. Time'.padEnd(10),
 				'Total'.padEnd(10),
-				'% Gain'.padEnd(6),
-				'Profit'.padEnd(6)
+				'% Gain'.padEnd(8),
+				'Profit'.padEnd(10)
 			].join(' ')
 		];
 
@@ -123,11 +123,11 @@ This command will report on how much profit you can make compared to other users
 			tableRows.push(
 				[
 					row.username.substr(0, usernamePad).padEnd(usernamePad),
-					curPrice.padEnd(10),
-					curFormattedDaytime.padEnd(9),
+					curPrice.padEnd(11),
+					curFormattedDaytime.padEnd(10),
 					total.padEnd(10),
-					pGain.padEnd(6),
-					profit.padEnd(6)
+					pGain.padEnd(8),
+					profit.padEnd(10)
 				].join(' ')
 			);
 		}
