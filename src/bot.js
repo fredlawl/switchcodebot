@@ -9,6 +9,8 @@ import { UserRepository } from "./user-repository";
 import { TurnipRepository } from "./turnip-repository";
 import { AddTurnipCmd } from "./commands/add-turnip";
 import { TurnipsCmd } from "./commands/turnips";
+import { ProfitCmd } from "./commands/profit";
+import { TurnipService } from "./turnip-service";
 
 const Discord = require('discord.js');
 const logger = require('winston');
@@ -42,6 +44,7 @@ commandRegistry.register(new SwitchCodeCmd());
 commandRegistry.register(new TimezoneCmd(userRepository));
 commandRegistry.register(new AddTurnipCmd(userRepository, turnipRepository));
 commandRegistry.register(new TurnipsCmd(userRepository, turnipRepository));
+commandRegistry.register(new ProfitCmd(new TurnipService(userRepository), turnipRepository));
 
 // Initialize Discord Bot
 const bot = new Discord.Client();

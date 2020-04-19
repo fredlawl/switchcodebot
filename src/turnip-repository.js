@@ -7,13 +7,6 @@ export class TurnipRepository
 
 	setup()
 	{
-		/*
-		 * TODO: Figure out a way to handle multiple servers such that
-		 *  a user logs a record once, but only the servers the user
-		 *  belongs to can see that users stats. Right now, if this
-		 *  were on multiple servers, everyone would be listed.
-		 *  Maybe that's okay?
-		 */
 		this.db.run(`
 			CREATE TABLE IF NOT EXISTS turnipRecords (
 				userId INT(11) NOT NULL,
@@ -33,9 +26,14 @@ export class TurnipRepository
 				fripm INT(11) NULL,
 				satam INT(11) NULL,
 				satpm INT(11) NULL,
+				numPurchased INT(11) DEFAULT 0 NOT NULL,
 				PRIMARY KEY(userId, week, year)
 			)
 		`);
+
+		this.db.run(`ALTER TABLE turnipRecords ADD COLUMN numPurchased INT(11) DEFAULT 0 NOT NULL`, [], function (err) {
+			// Dont care if this errors
+		});
 	}
 
 	insert(userId, username, week, year, amount, column)
@@ -50,6 +48,43 @@ export class TurnipRepository
 				}
 
 				resolve(this.changes);
+			});
+		});
+	}
+
+	addBuy(userId, username, year, week, amount)
+	{
+		return new Promise((resolve, reject) => {
+			this.db.run(`INSERT INTO turnipRecords (userId, username, week, year, numPurchased) VALUES (?, ?, ?, ?, ?) ON CONFLICT(userId, week, year) DO UPDATE SET numPurchased = ?;`, [
+				userId, username, week, year, amount, amount
+			], function (err) {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				resolve(this.changes);
+			});
+		});
+	}
+
+	all(year, week)
+	{
+		const sql = `
+SELECT
+	t.*,
+	um.timezone
+FROM turnipRecords t
+LEFT JOIN userMeta um ON um.userId = t.userId
+WHERE t.year = ? AND t.week = ?
+`;
+		return new Promise((resolve, reject) => {
+			this.db.all(sql, [year, week], function (err, rows) {
+				if (err) {
+					reject(err);
+				}
+
+				resolve(rows ?? []);
 			});
 		});
 	}

@@ -65,7 +65,7 @@ If you make a mistake, you can always change your sell prices at any time throug
 			return Command.EXIT_GENERAL_ERROR;
 		}
 
-		msg.reply(`I logged ${amount} to the ${week} week of ${year} - ${formattedDay}.`);
+		msg.reply(`I logged **${amount}** to the ${week} week of ${year} - ${formattedDay}.`);
 
 		return Command.EXIT_SUCCESS;
 	}
