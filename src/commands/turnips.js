@@ -79,19 +79,14 @@ By default, this command will provide a turnip report for everyone that recorded
 			stats.push(`${row.username.padEnd(13)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.timeAbbreviation.toUpperCase().padEnd(4)}`);
 		}
 
-		msg.channel.send(`Yeah you! Oh yeah! Put it in your mouth!\`\`\`${stats.join('\n')}\`\`\``, {
-			// embed: {
-			// 	title: `Week ${week} of ${year} Turnip Prices`,
-			// 	fields: [
-			// 		{
-			// 			name: 'Predictions',
-			// 			value: predictionUrls.join(', ')
-			// 		}
-			// 	],
-			// 	footer: {
-			// 		text: 'Brought to you by fredlawl'
-			// 	}
-			// }
+		msg.channel.send(`**Week ${week} of ${year} Turnip Prices:**\`\`\`${stats.join('\n')}\`\`\``, {
+			embed: {
+				title: `Predictions`,
+				description: predictionUrls.join(', '),
+				footer: {
+					text: 'Brought to you by fredlawl'
+				}
+			}
 		});
 
 		return Command.EXIT_SUCCESS;
