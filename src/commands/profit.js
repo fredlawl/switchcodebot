@@ -61,6 +61,7 @@ This command will report on how much profit you can make compared to other users
 
 	async report(msg, userId, turnipDateCalc)
 	{
+		const username = msg.author.username;
 		const rows = await this.turnipRepository.all(
 			turnipDateCalc.year,
 			turnipDateCalc.week
@@ -75,13 +76,15 @@ This command will report on how much profit you can make compared to other users
 
 		let numPurchased = 0;
 		let buyPrice = 0;
+		let originalTotal = 0;
 		for (let i = 0; i < rows.length; i++) {
-			if (rows[i].username !== msg.author.username) {
+			if (rows[i].username !== username) {
 				continue;
 			}
 
 			numPurchased = rows[i].numPurchased;
 			buyPrice = rows[i].buy ?? 0;
+			originalTotal = numPurchased * buyPrice;
 		}
 
 		let usernamePad = 13;
@@ -91,7 +94,7 @@ This command will report on how much profit you can make compared to other users
 				'Cur. Price'.padEnd(11),
 				'Cur. Time'.padEnd(10),
 				'Total'.padEnd(10),
-				'% Gain'.padEnd(8),
+				'% Gain'.padEnd(9),
 				'Profit'.padEnd(10)
 			].join(' ')
 		];
@@ -109,30 +112,33 @@ This command will report on how much profit you can make compared to other users
 			}
 
 			let total = curPrice * numPurchased;
-			let profit = total - (buyPrice * numPurchased);
+			let profit = total - originalTotal;
 			let pGain = 0.0;
 
-			if (profit > 0.0) {
-				pGain = total / (buyPrice * numPurchased);
+			if (originalTotal !== 0.0) {
+				pGain = (((total / originalTotal) - 1) * 100);
 			}
+
+			pGain = pGain.toFixed(2);
+			pGain = (pGain >= 0.0) ? '+' + pGain : pGain;
 
 			curPrice += '';
 			total += '';
 			profit += '';
-			pGain = pGain.toFixed(2) + '%';
+			pGain += '%';
 			tableRows.push(
 				[
 					row.username.substr(0, usernamePad).padEnd(usernamePad),
 					curPrice.padEnd(11),
 					curFormattedDaytime.padEnd(10),
 					total.padEnd(10),
-					pGain.padEnd(8),
+					pGain.padEnd(9),
 					profit.padEnd(10)
 				].join(' ')
 			);
 		}
 
-		msg.reply(`you bought **${numPurchased}** turnips this week, this is your gains if you buy from these users:\`\`\`${tableRows.join('\n')}\`\`\``);
+		msg.reply(`you bought **${numPurchased}** turnips @ **${buyPrice}**/turnip for a total of **${originalTotal}** this week. Here are your potential gains:\`\`\`${tableRows.join('\n')}\`\`\``);
 
 		return Command.EXIT_SUCCESS;
 	}
