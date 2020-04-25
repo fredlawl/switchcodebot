@@ -171,6 +171,6 @@ describe('abbreviation', () => {
 		const date = new Date('2020-04-11 00:00:00');
 		const calc = new TurnipDateCalculator(date);
 
-		expect(calc.formattedAbbreviation).toEqual('Sat. AM');
+		expect(calc.formattedAbbreviation()).toEqual('Sat. AM');
 	});
 });

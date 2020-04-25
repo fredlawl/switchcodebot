@@ -51,7 +51,7 @@ If you make a mistake, you can always change your sell prices at any time throug
 		turnipDateCalc = new TurnipDateCalculator(now);
 		const week = turnipDateCalc.week;
 		const year = turnipDateCalc.year;
-		const formattedDay = turnipDateCalc.formattedAbbreviation;
+		const formattedDay = turnipDateCalc.formattedAbbreviation(true);
 		let column = turnipDateCalc.fullAbbreviation;
 		if (turnipDateCalc.isSunday) {
 			column = 'buy';

@@ -1,3 +1,4 @@
+import regeneratorRuntime from "regenerator-runtime";
 import { CommandRegistry } from '../src/command-registry';
 
 test('register registers command', () => {

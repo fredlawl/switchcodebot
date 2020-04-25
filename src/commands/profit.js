@@ -104,7 +104,7 @@ This command will report on how much profit you can make compared to other users
 			let userTurnipCalc =
 				await this.turnipService.getTurnipDateCalculator(msg.createdAt, userId, row.timezone);
 			let curDaytime = userTurnipCalc.fullAbbreviation;
-			let curFormattedDaytime = userTurnipCalc.formattedAbbreviation;
+			let curFormattedDaytime = userTurnipCalc.formattedAbbreviation(true);
 			let curPrice = row[curDaytime] ?? 0;
 
 			if (userTurnipCalc.isSunday) {

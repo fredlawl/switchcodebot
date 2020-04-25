@@ -77,10 +77,10 @@ By default, this command will provide a turnip report for everyone that recorded
 			predictionUrls.push(formattedLink);
 			let sunamnt = (row.buy ?? '0') + '';
 			let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
-			stats.push(`${row.username.substr(0, usernamePad).padEnd(usernamePad)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.formattedAbbreviation.padEnd(10)}`);
+			stats.push(`${row.username.substr(0, usernamePad).padEnd(usernamePad)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.formattedAbbreviation(true).padEnd(10)}`);
 		}
 
-		msg.channel.send(`**${turnipDateCalc.formattedAbbreviation} - Week ${week} of ${year} Turnip Prices:**\`\`\`${stats.join('\n')}\`\`\``, {
+		msg.channel.send(`**${turnipDateCalc.formattedAbbreviation(false)} - Week ${week} of ${year} Turnip Prices:**\`\`\`${stats.join('\n')}\`\`\``, {
 			embed: {
 				title: `Predictions`,
 				description: predictionUrls.join(', ')

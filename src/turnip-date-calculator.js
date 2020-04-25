@@ -1,4 +1,4 @@
-import { isBefore, getISOWeek, addWeeks, setISOWeek, getISOWeekYear } from 'date-fns'
+import { isBefore, isAfter, getISOWeek, addWeeks, setISOWeek, getISOWeekYear } from 'date-fns'
 
 export class TurnipDateCalculator
 {
@@ -127,6 +127,12 @@ export class TurnipDateCalculator
 		return this.isMorning ? 'am' : 'pm';
 	}
 
+	get isStoreClosed()
+	{
+		return isBefore(this.now, new Date(this.now.getTime()).setHours(8, 0,0 ,0))
+			&& isAfter(this.now, new Date(this.now.getTime()).setHours(22, 0,0 ,0))
+	}
+
 	/**
 	 * Gets the abbreviated daytime.
 	 * @returns {string}
@@ -140,11 +146,15 @@ export class TurnipDateCalculator
 	 * A nicer way to show the daytime fullAbbreviation.
 	 * @returns {string}
 	 */
-	get formattedAbbreviation()
-	{
+	formattedAbbreviation(includeClosed = false) {
 		let daytime = this.todayAbbreviation;
 		daytime = daytime.charAt(0).toUpperCase() + daytime.slice(1) + '.';
 		daytime += ' ' + this.timeAbbreviation.toUpperCase();
+
+		if (includeClosed) {
+			daytime += this.isStoreClosed ? ' C' : ''
+		}
+
 		return daytime;
 	}
 }
