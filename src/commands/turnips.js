@@ -57,7 +57,7 @@ By default, this command will provide a turnip report for everyone that recorded
 		const usernamePad = 13;
 		let predictionUrls = [];
 		let stats = [
-			'User'.padEnd(usernamePad) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10) + 'Time'.padEnd(4)
+			'User'.padEnd(usernamePad) + 'Buy'.padEnd(7) + 'AM/PM'.padEnd(10) + 'Cur. Time'.padEnd(10)
 		];
 		for (let i = 0; i < rows.length; i++) {
 			let row = rows[i];
@@ -77,16 +77,13 @@ By default, this command will provide a turnip report for everyone that recorded
 			predictionUrls.push(formattedLink);
 			let sunamnt = (row.buy ?? '0') + '';
 			let ampmamnt = `${row[today + 'am'] ?? '0'}/${row[today + 'pm'] ?? '0'}`;
-			stats.push(`${row.username.substr(0, usernamePad).padEnd(usernamePad)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.timeAbbreviation.toUpperCase().padEnd(4)}`);
+			stats.push(`${row.username.substr(0, usernamePad).padEnd(usernamePad)}${sunamnt.padEnd(7)}${ampmamnt.padEnd(10)}${calc.formattedAbbreviation.padEnd(10)}`);
 		}
 
-		msg.channel.send(`**Week ${week} of ${year} Turnip Prices:**\`\`\`${stats.join('\n')}\`\`\``, {
+		msg.channel.send(`**${turnipDateCalc.formattedAbbreviation} - Week ${week} of ${year} Turnip Prices:**\`\`\`${stats.join('\n')}\`\`\``, {
 			embed: {
 				title: `Predictions`,
-				description: predictionUrls.join(', '),
-				footer: {
-					text: 'Brought to you by fredlawl'
-				}
+				description: predictionUrls.join(', ')
 			}
 		});
 
