@@ -142,5 +142,4 @@ This command will report on how much profit you can make compared to other users
 
 		return Command.EXIT_SUCCESS;
 	}
-
 }

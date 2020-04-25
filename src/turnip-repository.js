@@ -5,35 +5,61 @@ export class TurnipRepository
 		this.db = db;
 	}
 
-	setup()
+	async setup()
 	{
-		this.db.run(`
-			CREATE TABLE IF NOT EXISTS turnipRecords (
-				userId INT(11) NOT NULL,
-				username VARCHAR(255) NOT NULL,
-				week INT(11) NOT NULL,
-				year INT(11) NOT NULL,
-				buy INT(11) NULL,
-				monam INT(11) NULL,
-				monpm INT(11) NULL,
-				tueam INT(11) NULL,
-				tuepm INT(11) NULL,
-				wedam INT(11) NULL,
-				wedpm INT(11) NULL,
-				thuam INT(11) NULL,
-				thupm INT(11) NULL,
-				friam INT(11) NULL,
-				fripm INT(11) NULL,
-				satam INT(11) NULL,
-				satpm INT(11) NULL,
-				numPurchased INT(11) DEFAULT 0 NOT NULL,
-				PRIMARY KEY(userId, week, year)
-			)
-		`);
+		const tableName = 'turnipRecords';
+		const createTable = `
+CREATE TABLE IF NOT EXISTS ${tableName} (
+	userId UNSIGNED BIG INT NOT NULL,
+	username VARCHAR(255) NOT NULL,
+	week INT(11) NOT NULL,
+	year INT(11) NOT NULL,
+	buy INT(11) NULL,
+	monam INT(11) NULL,
+	monpm INT(11) NULL,
+	tueam INT(11) NULL,
+	tuepm INT(11) NULL,
+	wedam INT(11) NULL,
+	wedpm INT(11) NULL,
+	thuam INT(11) NULL,
+	thupm INT(11) NULL,
+	friam INT(11) NULL,
+	fripm INT(11) NULL,
+	satam INT(11) NULL,
+	satpm INT(11) NULL,
+	numPurchased INT(11) DEFAULT 0 NOT NULL,
+	PRIMARY KEY(userId, week, year)
+)`;
+		const migration = `
+INSERT INTO ${tableName} (userId, username, week, year, buy, monam, monpm, tueam, tuepm, wedam, wedpm, thuam, thupm, friam, fripm, satam, satpm, numPurchased)
+SELECT userId, username, week, year, buy, monam, monpm, tueam, tuepm, wedam, wedpm, thuam, thupm, friam, fripm, satam, satpm, numPurchased
+FROM ${tableName}_bak`;
 
-		this.db.run(`ALTER TABLE turnipRecords ADD COLUMN numPurchased INT(11) DEFAULT 0 NOT NULL`, [], function (err) {
-			// Dont care if this errors
+		const tableExists = await new Promise((resolve, reject) => {
+			this.db.get(`SELECT COUNT(1) AS cnt FROM sqlite_master WHERE type='table' AND name=?`, [
+				tableName
+			], (err, row) => {
+				if (err) {
+					reject(err);
+					return
+				}
+
+				resolve(row.cnt);
+			});
 		});
+
+		if (tableExists === 1) {
+			this.db.serialize(() => {
+				this.db.run(`DROP TABLE IF EXISTS ${tableName}_bak`);
+				this.db.run(`ALTER TABLE ${tableName} ADD COLUMN numPurchased INT(11) DEFAULT 0 NOT NULL`, [], (err) => {});
+				this.db.run(`ALTER TABLE ${tableName} RENAME TO ${tableName}_bak`);
+				this.db.run(createTable);
+				this.db.run(migration);
+				this.db.run(`DROP TABLE IF EXISTS ${tableName}_bak`);
+			});
+		} else {
+			this.db.run(createTable);
+		}
 	}
 
 	insert(userId, username, week, year, amount, column)

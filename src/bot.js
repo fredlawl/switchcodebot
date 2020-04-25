@@ -25,9 +25,14 @@ const db = new sqlite3.Database(dbPath);
 const userRepository = new UserRepository(db);
 const turnipRepository = new TurnipRepository(db);
 
-db.serialize(function () {
-	turnipRepository.setup();
-	userRepository.setup();
+db.serialize(async function () {
+	turnipRepository.setup().catch((err) => {
+		console.log('turnipRepository error', err);
+	});
+
+	userRepository.setup().catch((err) => {
+		console.log('userRepository error', err);
+	});
 });
 
 // Configure logger settings
