@@ -130,7 +130,7 @@ export class TurnipDateCalculator
 	get isStoreClosed()
 	{
 		return isBefore(this.now, new Date(this.now.getTime()).setHours(8, 0,0 ,0))
-			&& isAfter(this.now, new Date(this.now.getTime()).setHours(22, 0,0 ,0))
+			|| isAfter(this.now, new Date(this.now.getTime()).setHours(22, 0,0 ,0))
 	}
 
 	/**

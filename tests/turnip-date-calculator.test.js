@@ -173,4 +173,31 @@ describe('abbreviation', () => {
 
 		expect(calc.formattedAbbreviation()).toEqual('Sat. AM');
 	});
+
+	test('given a date, we get a fancy fullAbbreviation with close sign', () => {
+		const date = new Date('2020-04-11 00:00:00');
+		const calc = new TurnipDateCalculator(date);
+
+		expect(calc.formattedAbbreviation(true)).toEqual('Sat. AM C');
+	});
+});
+
+describe('isStoreClosed', () => {
+	test('given time between 8am and 10pm close is false', () => {
+		const date = new Date('2020-04-11 09:00:00');
+		const calc = new TurnipDateCalculator(date);
+		expect(calc.isStoreClosed).toEqual(false);
+	});
+
+	test('given time between 10pm and 8am close is true', () => {
+		const date = new Date('2020-04-11 23:00:00');
+		const calc = new TurnipDateCalculator(date);
+		expect(calc.isStoreClosed).toEqual(true);
+	});
+
+	test('given time between 12am and 8am close is true', () => {
+		const date = new Date('2020-04-11 01:00:00');
+		const calc = new TurnipDateCalculator(date);
+		expect(calc.isStoreClosed).toEqual(true);
+	});
 });
