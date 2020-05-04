@@ -18,10 +18,16 @@ export class TurnipService
 				console.log(err);
 			});
 
-			timezone = userMeta.timezone;
+			timezone = null;
+			if (userMeta) {
+				timezone = userMeta.timezone;
+			}
 		}
 
-		now = convertUTCTimezoneToLocal(now, timezone);
+		if (timezone) {
+			now = convertUTCTimezoneToLocal(now, timezone);
+		}
+
 		return new TurnipDateCalculator(now);
 	}
 }

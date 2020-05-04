@@ -69,4 +69,9 @@ describe('convertUTCTimezoneToLocal', () => {
 		const actual = parser.convertUTCTimezoneToLocal(new Date(), 'asdfasdfadf');
 		expect(actual).toEqual(null);
 	});
+
+	test('given null timezone, give us null date', () => {
+		const actual = parser.convertUTCTimezoneToLocal(new Date(), null);
+		expect(actual).toEqual(null);
+	});
 });
