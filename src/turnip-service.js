@@ -12,6 +12,7 @@ export class TurnipService
 	async getTurnipDateCalculator(date, userId, timezone)
 	{
 		let now = new Date(date.getTime());
+		let convertedDate = null;
 
 		if (!timezone) {
 			const userMeta = await this.userRepository.getUserMeta(userId).catch((err) => {
@@ -25,7 +26,10 @@ export class TurnipService
 		}
 
 		if (timezone) {
-			now = convertUTCTimezoneToLocal(now, timezone);
+			convertedDate = convertUTCTimezoneToLocal(now, timezone);
+			if (convertedDate) {
+				now = convertedDate;
+			}
 		}
 
 		return new TurnipDateCalculator(now);
